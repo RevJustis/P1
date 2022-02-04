@@ -22,7 +22,7 @@ object HiveTest2 {
 
     //spark.sql("create table newone1(id Int,name String) row format delimited fields terminated by ','")
     //spark.sql("LOAD DATA LOCAL INPATH 'input/kv1.txt' INTO TABLE newone1")
-    //spark.sql("SELECT * FROM newone1").show()
+    spark.sql("SELECT * FROM newone1").show()
 
   }
 }
