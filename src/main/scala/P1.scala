@@ -64,47 +64,47 @@ object P1 {
     //</editor-fold>
 
     //<editor-fold desc="Creates branch_a-c tables and loads">
-//    spark.sql("CREATE TABLE IF NOT EXISTS branch_a (bev STRING, branch STRING)" +
-//        "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
-//    spark.sql("CREATE TABLE IF NOT EXISTS branch_b (bev STRING, branch STRING)" +
-//      "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
-//    spark.sql("CREATE TABLE IF NOT EXISTS branch_c (bev STRING, branch STRING)" +
-//      "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
+    spark.sql("CREATE TABLE IF NOT EXISTS branch_a (bev STRING, branch STRING)" +
+        "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
+    spark.sql("CREATE TABLE IF NOT EXISTS branch_b (bev STRING, branch STRING)" +
+      "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
+    spark.sql("CREATE TABLE IF NOT EXISTS branch_c (bev STRING, branch STRING)" +
+      "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
 //    spark.sql("LOAD DATA LOCAL INPATH 'input/Bev_BranchA.txt' INTO TABLE branch_a")
 //    spark.sql("LOAD DATA LOCAL INPATH 'input/Bev_BranchB.txt' INTO TABLE branch_b")
 //    spark.sql("LOAD DATA LOCAL INPATH 'input/Bev_BranchC.txt' INTO TABLE branch_c")
     //</editor-fold>
 
-    //spark.sql("CREATE TABLE all_branch AS SELECT * FROM branch_a UNION SELECT * FROM branch_b UNION SELECT * FROM branch_c")
-    //spark.sql("CREATE TABLE cons_abc AS SELECT * FROM cons_a UNION SELECT * FROM cons_b UNION SELECT * FROM cons_c")
-    //spark.sql("CREATE TABLE b1bevs AS SELECT bev FROM all_branch WHERE branch = 'Branch1'")
-    //spark.sql("CREATE TABLE b2bevs AS SELECT bev FROM all_branch WHERE branch = 'Branch2'")
 
     //<editor-fold desc="TODO Creates cons_a-c and loads">
-    //    spark.sql("CREATE TABLE IF NOT EXISTS cons_a (bev STRING, count INT)" +
-    //      "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
+        spark.sql("CREATE TABLE IF NOT EXISTS cons_a (bev STRING, count INT)" +
+          "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
     //    spark.sql("LOAD DATA LOCAL INPATH 'input/Bev_ConscountA.txt' INTO TABLE cons_a")
-    //    spark.sql("CREATE TABLE IF NOT EXISTS cons_a (bev STRING, count INT)" +
-    //      "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
+        spark.sql("CREATE TABLE IF NOT EXISTS cons_a (bev STRING, count INT)" +
+          "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
     //    spark.sql("LOAD DATA LOCAL INPATH 'input/Bev_ConscountA.txt' INTO TABLE cons_a")
-    //    spark.sql("CREATE TABLE IF NOT EXISTS cons_b (bev STRING, count INT)" +
-    //      "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
+        spark.sql("CREATE TABLE IF NOT EXISTS cons_b (bev STRING, count INT)" +
+          "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
     //    spark.sql("LOAD DATA LOCAL INPATH 'input/Bev_ConscountB.txt' INTO TABLE cons_b")
-    //    spark.sql("CREATE TABLE IF NOT EXISTS cons_c (bev STRING, count INT)" +
-    //      "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
+        spark.sql("CREATE TABLE IF NOT EXISTS cons_c (bev STRING, count INT)" +
+          "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
     //    spark.sql("LOAD DATA LOCAL INPATH 'input/Bev_ConscountC.txt' INTO TABLE cons_c")
     //</editor-fold
 
     //<editor-fold desc="TODO Table of ABC combos"
     //</editor-fold>
 
-//    <editor-fold desc="testing queries">
+//    <editor-fold desc="MISC STUFF">
 //    Intersection of cons_a and cons_b \\
-//    spark.sql("CREATE TABLE cons_aXb AS SELECT * FROM cons_a INTERSECT SELECT * FROM cons_b")
+      spark.sql("CREATE TABLE IF NOT EXISTS cons_aXb AS SELECT * FROM cons_a INTERSECT SELECT * FROM cons_b")
+    spark.sql("CREATE TABLE IF NOT EXISTS all_branch AS SELECT * FROM branch_a UNION SELECT * FROM branch_b UNION SELECT * FROM branch_c")
+    spark.sql("CREATE TABLE IF NOT EXISTS cons_abc AS SELECT * FROM cons_a UNION SELECT * FROM cons_b UNION SELECT * FROM cons_c")
+    spark.sql("CREATE TABLE IF NOT EXISTS b1bevs AS SELECT bev FROM all_branch WHERE branch = 'Branch1'")
+    spark.sql("CREATE TABLE IF NOT EXISTS b2bevs AS SELECT bev FROM all_branch WHERE branch = 'Branch2'")
 
 //    bevs common between BranchA and ConscountA \\
-//    spark.sql("SELECT branch_a.branch, cons_a.bev, cons_a.count FROM branch_a " +
-//      "INNER JOIN cons_a ON cons_a.bev = branch_a.bev ORDER BY branch_a.branch, cons_a.bev, cons_a.count").show()
+//      spark.sql("SELECT branch_a.branch, cons_a.bev, cons_a.count FROM branch_a " +
+//        "INNER JOIN cons_a ON cons_a.bev = branch_a.bev ORDER BY branch_a.branch, cons_a.bev, cons_a.count").show()
 //    </editor-fold>
 
     println("Welcome to DataStuff, where we have some queries for you!")
@@ -116,8 +116,8 @@ object P1 {
 
     option match {
       case "Scenario 1" => // Total consumers for branch 1
-        spark.sql("SELECT SUM(count) AS 'Consumers Branch 1' FROM b1bevs INNER JOIN cons_abc AS c ON c.bev = b1bevs.bev").show()
-        spark.sql("SELECT SUM(count) AS 'Total Consumers for Branch 2' FROM b2bevs INNER JOIN cons_abc AS c ON c.bev = b2bevs.bev").show()
+        spark.sql("SELECT SUM(count) AS ConsBranch1 FROM b1bevs INNER JOIN cons_abc AS c ON c.bev = b1bevs.bev").show()
+        spark.sql("SELECT SUM(count) AS ConsBranch2 FROM b2bevs INNER JOIN cons_abc AS c ON c.bev = b2bevs.bev").show()
       case "Scenario 2" => // Most consumed beverage on branch 1
         spark.sql("SELECT b1bevs.bev, MAX(count) AS 'Most Consumed for Branch 1' FROM b1bevs INNER JOIN cons_abc AS c ON c.bev = b1bevs.bev").show()
         // Least consumed beverage on branch 2
