@@ -11,7 +11,7 @@ class MyMenu(options: List[String]) {
     //Prints out a section of the menu that is a set amount of characters long.
     val maxLength = 50;
     var tempStr = "| "
-    tempStr += ind.toString + " -> " + menVal
+    tempStr += (ind + 1).toString + " -> " + menVal
     while (tempStr.length < (maxLength - 1)) {
       tempStr += " "
     }
@@ -32,6 +32,6 @@ class MyMenu(options: List[String]) {
   }
 
   def selectOption(cho: Byte): String = {
-    return menuOptions(cho);
+    menuOptions(cho - 1);
   }
 }
