@@ -53,6 +53,8 @@ object P1 {
     .enableHiveSupport()
     .getOrCreate()
 
+  spark.sparkContext.setLogLevel("WARN")
+
   def main(args: Array[String]): Unit = {
     //<editor-fold desc="DROP commands">
     //spark.sql("DROP TABLE IF EXISTS branchbevs")
@@ -99,7 +101,6 @@ object P1 {
 //      spark.sql("SELECT branch_a.branch, cons_a.bev, cons_a.count FROM branch_a " +
 //        "INNER JOIN cons_a ON cons_a.bev = branch_a.bev ORDER BY branch_a.branch, cons_a.bev, cons_a.count").show()
       //</editor-fold>
-
     println("Welcome to DataStuff, where we have some queries for you!")
     val menu = new MyMenu(op1)
     menu.printMenu()
@@ -119,20 +120,38 @@ object P1 {
         println("Average consumed beverage of Branch 2")
         spark.sql("SELECT AVG(count) FROM b2bevs INNER JOIN cons_abc AS c ON c.bev = b2bevs.bev").show()
       case "Scenario 3" => // Available beverages on branch 10
+        spark.sql("SELECT * FROM b10bevs").show()
       case "Scenario 4" => // Create a "partiion,View" for scenario 3
+          spark.sql("CREATE TABLE IF NOT EXISTS Partitioned(bev STRING) COMMENT 'A PARTITIONED BRANCH TABLE' PARTITIONED BY (branches STRING)")
+          spark.sql("set hive.exec.dynamic.partition.mode=nonstrict")// TODO USE THIS FOR A MORE COMPACT DELETE
+          spark.sql("INSERT OVERWRITE TABLE Partitioned PARTITION(branches) SELECT bev,branch from all_branch")
+          spark.sql("SELECT * FROM Partitioned WHERE branches = 'Branch9'").show
       case "Scenario 5" => // Add note to a table
         val note = readLine("In this scenario you get to add a note to a table!\nPlease enter your note here: ")
-        spark.sql(s"ALTER TABLE branch_a SET TBLPROPERTIES('notes' = '$note')")//TODO Confirm the note was added
+        spark.sql(s"ALTER TABLE branch_a SET TBLPROPERTIES('notes' = '$note')")
+        spark.sql("SHOW TBLPROPERTIES branch_a").show()
         // Delete a row from a table
         var t = readLine("Now you get to delete some stuff.\nWhich beverage do you want to delete from BranchA?: ")
-        println(spark.sql(s"SELECT * FROM branch_a WHERE bev = '$t'").count())
         while (spark.sql(s"SELECT * FROM branch_a WHERE bev = '$t'").count() == 0) {
           t = readLine("Sorry, but that beverage isn't in the data, try again: ")
         }
-        spark.sql("CREATE TABLE temp_orc(bev STRING, branch STRING) STORED AS ORC")
-        spark.sql("INSERT INTO TABLE temp_orc SELECT * FROM branch_A")
-        spark.sql(s"DELETE FROM temp_orc WHERE bev = $t")
-        spark.sql("SELECT * FROM temp_orc").show
+        spark.sql(s"CREATE TABLE IF NOT EXISTS row AS SELECT * FROM branch_a WHERE bev = '$t' LIMIT 1")
+        spark.sql("CREATE TABLE IF NOT EXISTS branch_a_del AS " +
+          "SELECT branch_a.bev, branch_a.branch FROM branch_a " +
+          "LEFT JOIN row " +
+          "ON branch_a.bev = row.bev " +
+          "WHERE row.bev IS NULL")
+        spark.sql("INSERT OVERWRITE TABLE branch_a select * from branch_a_del")
+        spark.sql("DROP TABLE branch_a_del")
+        spark.sql("SELECT * FROM branch_a").show(9999)
+//        //create copy table
+//        spark1.sql("CREATE TABLE newone2_copy LIKE newone2")
+//        //load data into copy table except deleted item
+//        spark1.sql("INSERT INTO newone2_copy SELECT * FROM newone2 WHERE id NOT IN (SELECT id FROM newone2 WHERE id=23)")
+//        //overwrite copy table to original table
+//        spark1.sql("INSERT OVERWRITE TABLE newone2 SELECT * FROM newone2_copy")
+//        //drop copy table
+//        spark1.sql("DROP TABLE newone2_copy")
       case "Scenario 6" =>// TODO currently just a place to dump test queries. Should be My Query: Variety and Diversity
         spark.sql("SELECT * FROM all_branch").show
     }
