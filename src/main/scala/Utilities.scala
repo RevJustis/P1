@@ -2,6 +2,9 @@ import scala.io.StdIn.readChar
 
 
 object Utilities {
+  def end(): Unit ={
+    println("Thank you for your time, hope you enjoyed those queries!")
+  }
   def chooseN(n: Byte): Byte ={
     var input: Char = readChar()
     var inByte: Byte = 0
@@ -60,6 +63,19 @@ object Utilities {
             case '5' => goodIn = true; inByte = 5.toByte
             case '6' => goodIn = true; inByte = 6.toByte
             case _  => print("Sorry, but you have to choose '1', '2', '3', '4', '5', or '6': "); input = readChar()
+          }
+        }
+      case 7 =>
+        while (!goodIn){
+          input match {
+            case '1'  => goodIn = true; inByte = 1.toByte
+            case '2'  => goodIn = true; inByte = 2.toByte
+            case '3'  => goodIn = true; inByte = 3.toByte
+            case '4' => goodIn = true; inByte = 4.toByte
+            case '5' => goodIn = true; inByte = 5.toByte
+            case '6' => goodIn = true; inByte = 6.toByte
+            case '7' => goodIn = true; inByte = 7.toByte
+            case _  => print("Sorry, but you have to choose '1', '2', '3', '4', '5', '6', or '7': "); input = readChar()
           }
         }
     }
