@@ -1,4 +1,6 @@
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.SparkContext
+import org.apache.spark.sql.hive.HiveContext
 
 object HiveTest1 {
 
@@ -15,6 +17,5 @@ object HiveTest1 {
     val df = spark.createDataFrame(sampleSeq).toDF("Course id", "course name")
     df.show()
     df.write.format("csv").save("sampleSeq")
-
   }
 }

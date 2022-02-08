@@ -1,6 +1,9 @@
 import org.apache.spark.sql.SparkSession
+
 import scala.io.StdIn.{readByte, readChar, readLine}
 import Utilities._
+
+import java.io.{PrintWriter, File}
 import scala.Console.println
 
 object P1 {
@@ -58,7 +61,7 @@ object P1 {
 
   def main(args: Array[String]): Unit = {
     //<editor-fold desc="Set configuration">
-    spark.sql("set hive.exec.dynamic.partition.mode=nonstrict")// TODO USE THIS FOR A MORE COMPACT DELETE
+//    spark.sql("set hive.exec.dynamic.partition.mode=nonstrict")// TODO USE THIS FOR A MORE COMPACT DELETE
     //</editor-fold>
     //<editor-fold desc="DROP commands">
     //spark.sql("DROP TABLE IF EXISTS branchbevs")
@@ -69,42 +72,69 @@ object P1 {
     //</editor-fold>
 
     //<editor-fold desc="Creates tables">
-    spark.sql("CREATE TABLE IF NOT EXISTS branch_a (bev STRING, branch STRING)" +
-        "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
-    spark.sql("CREATE TABLE IF NOT EXISTS branch_b (bev STRING, branch STRING)" +
-      "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
-    spark.sql("CREATE TABLE IF NOT EXISTS branch_c (bev STRING, branch STRING)" +
-      "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
-    spark.sql("CREATE TABLE IF NOT EXISTS cons_a (bev STRING, count INT)" +
-      "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
-    spark.sql("CREATE TABLE IF NOT EXISTS cons_a (bev STRING, count INT)" +
-      "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
-    spark.sql("CREATE TABLE IF NOT EXISTS cons_b (bev STRING, count INT)" +
-      "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
-    spark.sql("CREATE TABLE IF NOT EXISTS cons_c (bev STRING, count INT)" +
-      "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
-    spark.sql("CREATE TABLE IF NOT EXISTS Partitioned_abc(bev STRING) COMMENT 'A PARTITIONED BRANCH TABLE' PARTITIONED BY (branches STRING)")
+//    spark.sql("CREATE TABLE IF NOT EXISTS branch_a (bev STRING, branch STRING)" +
+//        "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
+//    spark.sql("CREATE TABLE IF NOT EXISTS branch_b (bev STRING, branch STRING)" +
+//      "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
+//    spark.sql("CREATE TABLE IF NOT EXISTS branch_c (bev STRING, branch STRING)" +
+//      "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
+//    spark.sql("CREATE TABLE IF NOT EXISTS cons_a (bev STRING, count INT)" +
+//      "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
+//    spark.sql("CREATE TABLE IF NOT EXISTS cons_a (bev STRING, count INT)" +
+//      "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
+//    spark.sql("CREATE TABLE IF NOT EXISTS cons_b (bev STRING, count INT)" +
+//      "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
+//    spark.sql("CREATE TABLE IF NOT EXISTS cons_c (bev STRING, count INT)" +
+//      "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
+//    spark.sql("CREATE TABLE IF NOT EXISTS Partitioned_abc(bev STRING) COMMENT 'A PARTITIONED BRANCH TABLE' PARTITIONED BY (branches STRING)")
 
     //</editor-fold>
     //<editor-fold desc="Loads into tables">
-    spark.sql("LOAD DATA LOCAL INPATH 'input/Bev_BranchA.txt' OVERWRITE INTO TABLE branch_a")
+//    spark.sql("LOAD DATA LOCAL INPATH 'input/Bev_BranchA.txt' OVERWRITE INTO TABLE branch_a")
 //    spark.sql("LOAD DATA LOCAL INPATH 'input/Bev_BranchB.txt' INTO TABLE branch_b")
 //    spark.sql("LOAD DATA LOCAL INPATH 'input/Bev_BranchC.txt' INTO TABLE branch_c")
     //    spark.sql("LOAD DATA LOCAL INPATH 'input/Bev_ConscountA.txt' INTO TABLE cons_a")
     //    spark.sql("LOAD DATA LOCAL INPATH 'input/Bev_ConscountA.txt' INTO TABLE cons_a")
     //    spark.sql("LOAD DATA LOCAL INPATH 'input/Bev_ConscountB.txt' INTO TABLE cons_b")
     //    spark.sql("LOAD DATA LOCAL INPATH 'input/Bev_ConscountC.txt' INTO TABLE cons_c")
-    spark.sql("INSERT OVERWRITE TABLE Partitioned_abc PARTITION(branches) SELECT bev,branch from all_branch")
+//    spark.sql("INSERT OVERWRITE TABLE Partitioned_abc PARTITION(branches) SELECT bev,branch from all_branch")
     //</editor-fold
     //<editor-fold desc="Create table from query and MISC">
 //    Intersection of cons_a and cons_b \\
-    spark.sql("CREATE TABLE IF NOT EXISTS cons_aXb AS SELECT * FROM cons_a INTERSECT SELECT * FROM cons_b")
-    spark.sql("CREATE TABLE IF NOT EXISTS all_branch AS SELECT * FROM branch_a UNION SELECT * FROM branch_b UNION SELECT * FROM branch_c")
-    spark.sql("CREATE TABLE IF NOT EXISTS cons_abc AS SELECT * FROM cons_a UNION SELECT * FROM cons_b UNION SELECT * FROM cons_c")
-    spark.sql("CREATE TABLE IF NOT EXISTS b1bevs AS SELECT bev FROM all_branch WHERE branch = 'Branch1'")
-    spark.sql("CREATE TABLE IF NOT EXISTS b2bevs AS SELECT bev FROM all_branch WHERE branch = 'Branch2'")
+//    spark.sql("CREATE TABLE IF NOT EXISTS cons_aXb AS SELECT * FROM cons_a INTERSECT SELECT * FROM cons_b")
+//    spark.sql("CREATE TABLE IF NOT EXISTS all_branch AS SELECT * FROM branch_a UNION SELECT * FROM branch_b UNION SELECT * FROM branch_c")
+//    spark.sql("CREATE TABLE IF NOT EXISTS cons_abc AS SELECT * FROM cons_a UNION SELECT * FROM cons_b UNION SELECT * FROM cons_c")
+//    for (x <- 1 to 9) {
+//      spark.sql(s"CREATE TABLE IF NOT EXISTS b${x}bevs AS SELECT bev FROM all_branch WHERE branch = 'Branch$x'")
+//    }
+//    for (x <- 1 to 9) {
+//      spark.sql(s"CREATE TABLE IF NOT EXISTS bevTot$x AS SELECT $x AS branch, COUNT(bev) AS bevTot FROM " +
+//        s"b${x}bevs")
+//    }
+//    for (x <- 1 to 9) {
+//      val c = spark.sql(s"SELECT $x AS branch, SUM(count) AS cons FROM " +
+//      s"b${x}bevs INNER JOIN cons_abc AS c ON c.bev = b${x}bevs.bev").collect()
+//      val pw = new PrintWriter(new File(s"input/dumb$x.txt" ))
+//      pw.write((c(0)(0)).toString + ',' + c(0)(1) + '\n')
+//      pw.close()
+//    }
+    for (x <- 1 to 9) {
+      spark.sql(s"CREATE TABLE IF NOT EXISTS consTot$x (branch STRING, consTot STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
+      spark.sql(s"LOAD DATA LOCAL INPATH 'input/dumb$x.txt' OVERWRITE INTO TABLE consTot$x")
+      spark.sql(s"SELECT * FROM constot$x").show
+    }
+//    var s = "CREATE TABLE IF NOT EXISTS bevTotAll AS SELECT * FROM bevTot1 "
+//    for (x <- 2 to 9) {
+//      s = s + s"UNION SELECT * FROM bevTot$x "
+//    }
+//    spark.sql(s)
 
-//    bevs common between BranchA and ConscountA \\
+    var s2 = "CREATE TABLE IF NOT EXISTS cons_tot_all AS SELECT * FROM constot1 "
+    for (x <- 2 to 9) {
+      s2 = s2 + s"UNION SELECT * FROM constot$x "
+    }
+    spark.sql(s2)
+    //    bevs common between BranchA and ConscountA \\
 //      spark.sql("SELECT branch_a.branch, cons_a.bev, cons_a.count FROM branch_a " +
 //        "INNER JOIN cons_a ON cons_a.bev = branch_a.bev ORDER BY branch_a.branch, cons_a.bev, cons_a.count").show()
       //</editor-fold>
@@ -122,14 +152,17 @@ object P1 {
       option match {
         case "Scenario 1" =>
           println("Total consumers for Branch 1")
-          spark.sql("SELECT SUM(count) AS ConsBranch1 FROM b1bevs INNER JOIN cons_abc AS c ON c.bev = b1bevs.bev").show()
+          //spark.sql("SELECT * FROM totCon1").show()
           println("Total consumers for Branch 2")
-          spark.sql("SELECT SUM(count) AS ConsBranch2 FROM b2bevs INNER JOIN cons_abc AS c ON c.bev = b2bevs.bev").show()
+          val v = 2
+          spark.sql(s"SELECT $v AS branch, SUM(count) AS ConsBranch2 FROM b2bevs INNER JOIN cons_abc AS c ON c.bev = b2bevs.bev").show()
         case "Scenario 2" =>
           println("Most consumed beverage on branch 1")
-          spark.sql("SELECT b1bevs.bev, count FROM b1bevs INNER JOIN cons_abc AS c ON c.bev = b1bevs.bev ORDER BY count DESC LIMIT 1").show()
+          spark.sql("SELECT b1bevs.bev, count FROM b1bevs INNER JOIN cons_abc AS c ON c.bev = b1bevs.bev " +
+            "ORDER BY count DESC LIMIT 1").show()
           println("Least consumed beverage on branch 2")
-          spark.sql("SELECT b2bevs.bev, count FROM b2bevs INNER JOIN cons_abc AS c ON c.bev = b2bevs.bev ORDER BY count LIMIT 1").show()
+          spark.sql("SELECT b2bevs.bev, count FROM b2bevs INNER JOIN cons_abc AS c ON c.bev = b2bevs.bev " +
+            "ORDER BY count LIMIT 1").show()
           println("Average consumed beverage of Branch 2")
           spark.sql("SELECT AVG(count) FROM b2bevs INNER JOIN cons_abc AS c ON c.bev = b2bevs.bev").show()
         case "Scenario 3" =>
@@ -157,7 +190,10 @@ object P1 {
           spark.sql("DROP TABLE branch_a_del")
           spark.sql("SELECT * FROM branch_a").show(9999)
         case "Scenario 6" =>// TODO currently just a place to dump test queries. Should be My Query: Variety and Diversity
-          spark.sql("SELECT * FROM all_branch").show
+          spark.sql("SELECT * FROM bevTotAll").show
+          spark.sql("SELECT * FROM cons_tot_all").show
+//          spark.sql("SELECT consTotAll.branch, (bevTot / cons) AS Diversity_Rank  FROM consTotAll " +
+//            "INNER JOIN bevTotAll ON consTotAll.branch = bevTotAll.branch").show
         case "End Program" => continue = false
       }
     }
