@@ -24,8 +24,8 @@ object P1 {
     "End Program"
   )
   val s1 = List[String]( // Implement with type 1 if possible
-    "Total Number of Consumers on Branch 1",
-    "Total Number of Consumers on Branch 2"
+    "Total Number of on Branch 1",
+    "Total Number of on Branch 2"
   )
   val s2 = List[String](
     "Most Consumed Beverage on Branch 1",
@@ -69,6 +69,17 @@ object P1 {
     //spark.sql("DROP TABLE IF EXISTS cons_b")
     //spark.sql("DROP TABLE IF EXISTS cons_c")
     //spark.sql("DROP TABLE IF EXISTS cons_aXb")
+    spark.sql("DROP TABLE IF EXISTS constot1")
+    spark.sql("DROP TABLE IF EXISTS constot2")
+    spark.sql("DROP TABLE IF EXISTS constot3")
+    spark.sql("DROP TABLE IF EXISTS constot4")
+    spark.sql("DROP TABLE IF EXISTS constot5")
+    spark.sql("DROP TABLE IF EXISTS constot6")
+    spark.sql("DROP TABLE IF EXISTS constot7")
+    spark.sql("DROP TABLE IF EXISTS constot8")
+    spark.sql("DROP TABLE IF EXISTS constot9")
+    spark.sql("DROP TABLE IF EXISTS constotall")
+    spark.sql("DROP TABLE IF EXISTS cons_tot_all")
     //</editor-fold>
 
     //<editor-fold desc="Creates tables">
@@ -119,9 +130,8 @@ object P1 {
 //      pw.close()
 //    }
     for (x <- 1 to 9) {
-      spark.sql(s"CREATE TABLE IF NOT EXISTS consTot$x (branch STRING, consTot STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
+      spark.sql(s"CREATE TABLE IF NOT EXISTS consTot$x (branch INT, consTot INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
       spark.sql(s"LOAD DATA LOCAL INPATH 'input/dumb$x.txt' OVERWRITE INTO TABLE consTot$x")
-      spark.sql(s"SELECT * FROM constot$x").show
     }
 //    var s = "CREATE TABLE IF NOT EXISTS bevTotAll AS SELECT * FROM bevTot1 "
 //    for (x <- 2 to 9) {
@@ -129,7 +139,7 @@ object P1 {
 //    }
 //    spark.sql(s)
 
-    var s2 = "CREATE TABLE IF NOT EXISTS cons_tot_all AS SELECT * FROM constot1 "
+    var s2 = "CREATE TABLE IF NOT EXISTS constotall AS SELECT * FROM constot1 "
     for (x <- 2 to 9) {
       s2 = s2 + s"UNION SELECT * FROM constot$x "
     }
@@ -151,9 +161,9 @@ object P1 {
 
       option match {
         case "Scenario 1" =>
-          println("Total consumers for Branch 1")
+          println("Total for Branch 1")
           //spark.sql("SELECT * FROM totCon1").show()
-          println("Total consumers for Branch 2")
+          println("Total for Branch 2")
           val v = 2
           spark.sql(s"SELECT $v AS branch, SUM(count) AS ConsBranch2 FROM b2bevs INNER JOIN cons_abc AS c ON c.bev = b2bevs.bev").show()
         case "Scenario 2" =>
@@ -190,10 +200,8 @@ object P1 {
           spark.sql("DROP TABLE branch_a_del")
           spark.sql("SELECT * FROM branch_a").show(9999)
         case "Scenario 6" =>// TODO currently just a place to dump test queries. Should be My Query: Variety and Diversity
-          spark.sql("SELECT * FROM bevTotAll").show
-          spark.sql("SELECT * FROM cons_tot_all").show
-//          spark.sql("SELECT consTotAll.branch, (bevTot / cons) AS Diversity_Rank  FROM consTotAll " +
-//            "INNER JOIN bevTotAll ON consTotAll.branch = bevTotAll.branch").show
+          spark.sql("SELECT constotall.branch, (bevTot / consTot) AS Diversity_Rank  FROM constotall " +
+            "INNER JOIN bevTotAll ON constotall.branch = bevTotAll.branch").show
         case "End Program" => continue = false
       }
     }
