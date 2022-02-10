@@ -1,7 +1,123 @@
 import scala.io.StdIn.readChar
-
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions.col
+import java.io.{File, PrintWriter}
+import scala.Console.println
 
 object Utilities {
+  def junk(spark: SparkSession): Unit ={
+    spark.sql("set hive.exec.dynamic.partition.mode=nonstrict")// TODO USE THIS FOR A MORE COMPACT DELETE
+
+    //spark.sql("DROP TABLE IF EXISTS branchbevs")
+    //spark.sql("DROP TABLE IF EXISTS cons_a")
+    //spark.sql("DROP TABLE IF EXISTS cons_b")
+    //spark.sql("DROP TABLE IF EXISTS cons_c")
+    //spark.sql("DROP TABLE IF EXISTS cons_aXb")
+    //spark.sql("DROP TABLE IF EXISTS constot1")
+    //spark.sql("DROP TABLE IF EXISTS constot2")
+    //spark.sql("DROP TABLE IF EXISTS constot3")
+    //spark.sql("DROP TABLE IF EXISTS constot4")
+    //spark.sql("DROP TABLE IF EXISTS constot5")
+    //spark.sql("DROP TABLE IF EXISTS constot6")
+    //spark.sql("DROP TABLE IF EXISTS constot7")
+    //spark.sql("DROP TABLE IF EXISTS constot8")
+    //spark.sql("DROP TABLE IF EXISTS constot9")
+    //spark.sql("DROP TABLE IF EXISTS constotall")
+    //spark.sql("DROP TABLE IF EXISTS cons_tot_all")
+
+//    spark.sql("CREATE TABLE IF NOT EXISTS branch_a (bev STRING, branch STRING)" +
+//        "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
+//    spark.sql("CREATE TABLE IF NOT EXISTS branch_b (bev STRING, branch STRING)" +
+//      "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
+//    spark.sql("CREATE TABLE IF NOT EXISTS branch_c (bev STRING, branch STRING)" +
+//      "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
+//    spark.sql("CREATE TABLE IF NOT EXISTS cons_a (bev STRING, count INT)" +
+//      "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
+//    spark.sql("CREATE TABLE IF NOT EXISTS cons_a (bev STRING, count INT)" +
+//      "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
+//    spark.sql("CREATE TABLE IF NOT EXISTS cons_b (bev STRING, count INT)" +
+//      "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
+//    spark.sql("CREATE TABLE IF NOT EXISTS cons_c (bev STRING, count INT)" +
+//      "ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
+//    spark.sql("CREATE TABLE IF NOT EXISTS Partitioned_abc(bev STRING) PARTITIONED BY (branches STRING)")
+
+//    spark.sql("LOAD DATA LOCAL INPATH 'input/Bev_BranchA.txt' OVERWRITE INTO TABLE branch_a")
+//    spark.sql("LOAD DATA LOCAL INPATH 'input/Bev_BranchB.txt' INTO TABLE branch_b")
+//    spark.sql("LOAD DATA LOCAL INPATH 'input/Bev_BranchC.txt' INTO TABLE branch_c")
+    //    spark.sql("LOAD DATA LOCAL INPATH 'input/Bev_ConscountA.txt' INTO TABLE cons_a")
+    //    spark.sql("LOAD DATA LOCAL INPATH 'input/Bev_ConscountA.txt' INTO TABLE cons_a")
+    //    spark.sql("LOAD DATA LOCAL INPATH 'input/Bev_ConscountB.txt' INTO TABLE cons_b")
+    //    spark.sql("LOAD DATA LOCAL INPATH 'input/Bev_ConscountC.txt' INTO TABLE cons_c")
+//    spark.sql("INSERT OVERWRITE TABLE Partitioned_abc PARTITION(branches) SELECT bev,branch from all_branch")
+
+//    Intersection of cons_a and cons_b \\
+//    spark.sql("CREATE TABLE IF NOT EXISTS cons_aXb AS SELECT * FROM cons_a INTERSECT SELECT * FROM cons_b")
+//    spark.sql("CREATE TABLE IF NOT EXISTS all_branch AS SELECT * FROM branch_a UNION SELECT * FROM branch_b UNION SELECT * FROM branch_c")
+//    spark.sql("CREATE TABLE IF NOT EXISTS cons_abc AS SELECT * FROM cons_a UNION SELECT * FROM cons_b UNION SELECT * FROM cons_c")
+//    for (x <- 1 to 9) {
+//      spark.sql(s"CREATE TABLE IF NOT EXISTS b${x}bevs AS SELECT bev FROM all_branch WHERE branch = 'Branch$x'")
+//    }
+//    for (x <- 1 to 9) {
+//      spark.sql(s"CREATE TABLE IF NOT EXISTS bevTot$x AS SELECT $x AS branch, COUNT(bev) AS bevTot FROM " +
+//        s"b${x}bevs")
+//    }
+//    for (x <- 1 to 9) {
+//      val c = spark.sql(s"SELECT $x AS branch, SUM(count) AS cons FROM " +
+//      s"b${x}bevs INNER JOIN cons_abc AS c ON c.bev = b${x}bevs.bev").collect()
+//      val pw = new PrintWriter(new File(s"input/dumb$x.txt" ))
+//      pw.write((c(0)(0)).toString + ',' + c(0)(1) + '\n')
+//      pw.close()
+//    }
+    for (x <- 1 to 9) {
+      spark.sql(s"CREATE TABLE IF NOT EXISTS consTot$x (branch INT, consTot INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
+      spark.sql(s"LOAD DATA LOCAL INPATH 'input/dumb$x.txt' OVERWRITE INTO TABLE consTot$x")
+    }
+//    var s = "CREATE TABLE IF NOT EXISTS bevTotAll AS SELECT * FROM bevTot1 "
+//    for (x <- 2 to 9) {
+//      s = s + s"UNION SELECT * FROM bevTot$x "
+//    }
+//    spark.sql(s)
+
+    var s2 = "CREATE TABLE IF NOT EXISTS constotall AS SELECT * FROM constot1 "
+    for (x <- 2 to 9) {
+      s2 = s2 + s"UNION SELECT * FROM constot$x "
+    }
+    spark.sql(s2)
+
+    //    bevs common between BranchA and ConscountA \\
+//      spark.sql("SELECT branch_a.branch, cons_a.bev, cons_a.count FROM branch_a " +
+//        "INNER JOIN cons_a ON cons_a.bev = branch_a.bev ORDER BY branch_a.branch, cons_a.bev, cons_a.count").show()
+  }
+  def s1(spark: SparkSession): Unit ={
+    println("Total for Branch 1")
+    spark.sql("SELECT * FROM constot1").show()
+    println("Total for Branch 2")
+    spark.sql(s"SELECT 2 AS branch, SUM(count) AS ConsBranch2 FROM b2bevs INNER JOIN cons_abc AS c ON c.bev = b2bevs.bev").show()
+  }
+  def s2(spark: SparkSession): Unit ={
+    println("Most consumed beverage on branch 1")
+    spark.sql("SELECT b1bevs.bev, count FROM b1bevs INNER JOIN cons_abc AS c ON c.bev = b1bevs.bev " +
+      "ORDER BY count DESC LIMIT 1").show()
+    println("Least consumed beverage on branch 2")
+    spark.sql("SELECT b2bevs.bev, count FROM b2bevs INNER JOIN cons_abc AS c ON c.bev = b2bevs.bev " +
+      "ORDER BY count LIMIT 1").show()
+    println("Average beverage consumption of Branch 2")
+    spark.sql("SELECT AVG(count) FROM b2bevs INNER JOIN cons_abc AS c ON c.bev = b2bevs.bev").show()
+  }
+  def s3(spark: SparkSession): Unit ={
+  }
+  def s4(spark: SparkSession): Unit ={
+  }
+  def s5(spark: SparkSession): Unit ={
+  }
+  def s6(spark: SparkSession): Unit ={
+  }
+  def s7(spark: SparkSession): Unit ={
+  }
+  def s8(spark: SparkSession): Unit ={
+  }
+  def s9(spark: SparkSession): Unit ={
+  }
   def end(): Unit ={
     println("Thank you for your time, hope you enjoyed those queries!")
   }
