@@ -48,12 +48,13 @@ object Utilities {
     //    spark.sql("LOAD DATA LOCAL INPATH 'input/Bev_ConscountA.txt' INTO TABLE cons_a")
     //    spark.sql("LOAD DATA LOCAL INPATH 'input/Bev_ConscountB.txt' INTO TABLE cons_b")
     //    spark.sql("LOAD DATA LOCAL INPATH 'input/Bev_ConscountC.txt' INTO TABLE cons_c")
-//    spark.sql("INSERT OVERWRITE TABLE Partitioned_abc PARTITION(branches) SELECT bev,branch from all_branch")
+//    spark.sql("INSERT OVERWRITE TABLE Partitioned_abc PARTITION(branches) SELECT bev,branch FROM all_branch")
 
 //    Intersection of cons_a and cons_b \\
 //    spark.sql("CREATE TABLE IF NOT EXISTS cons_aXb AS SELECT * FROM cons_a INTERSECT SELECT * FROM cons_b")
 //    spark.sql("CREATE TABLE IF NOT EXISTS all_branch AS SELECT * FROM branch_a UNION SELECT * FROM branch_b UNION SELECT * FROM branch_c")
 //    spark.sql("CREATE TABLE IF NOT EXISTS cons_abc AS SELECT * FROM cons_a UNION SELECT * FROM cons_b UNION SELECT * FROM cons_c")
+//
 //    for (x <- 1 to 9) {
 //      spark.sql(s"CREATE TABLE IF NOT EXISTS b${x}bevs AS SELECT bev FROM all_branch WHERE branch = 'Branch$x'")
 //    }
@@ -68,59 +69,31 @@ object Utilities {
 //      pw.write((c(0)(0)).toString + ',' + c(0)(1) + '\n')
 //      pw.close()
 //    }
-    for (x <- 1 to 9) {
-      spark.sql(s"CREATE TABLE IF NOT EXISTS consTot$x (branch INT, consTot INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
-      spark.sql(s"LOAD DATA LOCAL INPATH 'input/dumb$x.txt' OVERWRITE INTO TABLE consTot$x")
-    }
+    // for (x <- 1 to 9) {
+    //   spark.sql(s"CREATE TABLE IF NOT EXISTS consTot$x (branch INT, consTot INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','")
+    //   spark.sql(s"LOAD DATA LOCAL INPATH 'input/dumb$x.txt' OVERWRITE INTO TABLE consTot$x")
+    // }
 //    var s = "CREATE TABLE IF NOT EXISTS bevTotAll AS SELECT * FROM bevTot1 "
 //    for (x <- 2 to 9) {
 //      s = s + s"UNION SELECT * FROM bevTot$x "
 //    }
 //    spark.sql(s)
 
-    var s2 = "CREATE TABLE IF NOT EXISTS constotall AS SELECT * FROM constot1 "
-    for (x <- 2 to 9) {
-      s2 = s2 + s"UNION SELECT * FROM constot$x "
-    }
-    spark.sql(s2)
+    // var s2 = "CREATE TABLE IF NOT EXISTS constotall AS SELECT * FROM constot1 "
+    // for (x <- 2 to 9) {
+    //   s2 = s2 + s"UNION SELECT * FROM constot$x "
+    // }
+    // spark.sql(s2)
 
     //    bevs common between BranchA and ConscountA \\
 //      spark.sql("SELECT branch_a.branch, cons_a.bev, cons_a.count FROM branch_a " +
 //        "INNER JOIN cons_a ON cons_a.bev = branch_a.bev ORDER BY branch_a.branch, cons_a.bev, cons_a.count").show()
   }
-  def s1(spark: SparkSession): Unit ={
-    println("Total for Branch 1")
-    spark.sql("SELECT * FROM constot1").show()
-    println("Total for Branch 2")
-    spark.sql(s"SELECT 2 AS branch, SUM(count) AS ConsBranch2 FROM b2bevs INNER JOIN cons_abc AS c ON c.bev = b2bevs.bev").show()
-  }
-  def s2(spark: SparkSession): Unit ={
-    println("Most consumed beverage on branch 1")
-    spark.sql("SELECT b1bevs.bev, count FROM b1bevs INNER JOIN cons_abc AS c ON c.bev = b1bevs.bev " +
-      "ORDER BY count DESC LIMIT 1").show()
-    println("Least consumed beverage on branch 2")
-    spark.sql("SELECT b2bevs.bev, count FROM b2bevs INNER JOIN cons_abc AS c ON c.bev = b2bevs.bev " +
-      "ORDER BY count LIMIT 1").show()
-    println("Average beverage consumption of Branch 2")
-    spark.sql("SELECT AVG(count) FROM b2bevs INNER JOIN cons_abc AS c ON c.bev = b2bevs.bev").show()
-  }
-  def s3(spark: SparkSession): Unit ={
-  }
-  def s4(spark: SparkSession): Unit ={
-  }
-  def s5(spark: SparkSession): Unit ={
-  }
-  def s6(spark: SparkSession): Unit ={
-  }
-  def s7(spark: SparkSession): Unit ={
-  }
-  def s8(spark: SparkSession): Unit ={
-  }
-  def s9(spark: SparkSession): Unit ={
-  }
+
   def end(): Unit ={
     println("Thank you for your time, hope you enjoyed those queries!")
   }
+
   def chooseN(n: Byte): Byte ={
     var input: Char = readChar()
     var inByte: Byte = 0

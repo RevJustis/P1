@@ -39,6 +39,7 @@ object P1 {
     var option: String = ""
     val menu = new MyMenu(op1)
     var continue = true
+
     while (continue) {
       menu.printMenu()
       print("Option: ")
@@ -47,10 +48,21 @@ object P1 {
 
       option match {
         case "Scenario 1" =>
-          s1(spark)
+          println("Total for Branch 1")
+          val df = spark.sql("SELECT * FROM constot1")
+          df.show()
+          println("Total for Branch 2")
+          spark.sql(s"SELECT 2 AS branch, SUM(count) AS ConsBranch2 FROM b2bevs INNER JOIN cons_abc AS c ON c.bev = b2bevs.bev").show()
           readLine("Press Enter to view menu")
         case "Scenario 2" =>
-          s2(spark)
+          println("Most consumed beverage on branch 1")
+          spark.sql("SELECT b1bevs.bev, count FROM b1bevs INNER JOIN cons_abc AS c ON c.bev = b1bevs.bev " +
+                      "ORDER BY count DESC LIMIT 1").show()
+          println("Least consumed beverage on branch 2")
+          spark.sql("SELECT b2bevs.bev, count FROM b2bevs INNER JOIN cons_abc AS c ON c.bev = b2bevs.bev " +
+                      "ORDER BY count LIMIT 1").show()
+          println("Average beverage consumption of Branch 2")
+          spark.sql("SELECT AVG(count) FROM b2bevs INNER JOIN cons_abc AS c ON c.bev = b2bevs.bev").show()
           readLine("Press Enter to view menu")
         case "Scenario 3" =>
           println("Available beverages on branch 9")
@@ -65,10 +77,7 @@ object P1 {
           readLine("Press Enter to view menu")
           /* //some alternate partition code testing
           val df = spark.sql("SELECT bev, branch FROM all_branch")
-          println("Below is a partition ??????????????")
-          println(df.repartition(9, col("branch")).where("branch == 'Branch5'").count())
-          println("Create a partition for Scenario 3 REDUX")
-          println(spark.sql("SELECT * FROM Partitioned_abc").where("branches == 'Branch5'").count)
+          df.repartition(9, col("branch")).where("branch == 'Branch5'").show()
            */
         case "Scenario 5" => // Add note to a table
           val note = readLine("In this scenario you get to add a note to the branch_a table!\nPlease enter your note here: ")
@@ -101,9 +110,12 @@ object P1 {
             "has significant weight and to indicate this the rank will be made zero. This means you both know how many\n" +
             "items on the menu were ordered, how diverse your customers orders are, and whether or not this metric\n" +
             "contextually valuable. When was the last time business data told you when it is and isn't useful?")
-          spark.sql("SELECT constotall.branch, ROUND(((bevTot / consTot) * (bevTot % 54)), 3) AS Diversity_Rank  FROM constotall " +
-            "INNER JOIN bevTotAll ON constotall.branch = bevTotAll.branch").show
-            readLine("Press Enter to view menu")
+          val df = spark.sql("SELECT constotall.branch AS Branch, ((bevTot / consTot) * (bevTot % 54))  AS Diversity_Rank " +
+                               "FROM constotall " +
+                               "INNER JOIN bevTotAll ON constotall.branch = bevTotAll.branch")
+          df.show
+          df.coalesce(1).write.format("csv").option("header",true).mode("overwrite").save("hdfs://localhost:9000/user/justis/future.csv")
+          readLine("Press Enter to view menu")
         case "End Program" => continue = false
       }
     }

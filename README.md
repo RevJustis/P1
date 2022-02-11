@@ -36,3 +36,8 @@ All the quaries should be and app  with menu
 
 
 Start date :01-02-2022 to 11-02-2022
+
+\/below is the code for Zeppelin\/ 
+val dfTrue = spark.read.options(Map("inferSchema"->"true","header"->"true")).csv("future.csv")
+dfTrue.show()
+dfTrue.registerTempTable("fq")
