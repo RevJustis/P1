@@ -53,7 +53,6 @@ object P1 {
           df.show()
           println("Total for Branch 2")
           spark.sql(s"SELECT 2 AS branch, SUM(count) AS ConsBranch2 FROM b2bevs INNER JOIN cons_abc AS c ON c.bev = b2bevs.bev").show()
-          readLine("Press Enter to view menu")
         case "Scenario 2" =>
           println("Most consumed beverage on branch 1")
           spark.sql("SELECT b1bevs.bev, count FROM b1bevs INNER JOIN cons_abc AS c ON c.bev = b1bevs.bev " +
@@ -63,18 +62,15 @@ object P1 {
                       "ORDER BY count LIMIT 1").show()
           println("Average beverage consumption of Branch 2")
           spark.sql("SELECT AVG(count) FROM b2bevs INNER JOIN cons_abc AS c ON c.bev = b2bevs.bev").show()
-          readLine("Press Enter to view menu")
         case "Scenario 3" =>
           println("Available beverages on branch 9")
           spark.sql("SELECT * FROM all_branch WHERE branch = 'Branch9'").show()
           println("Beverages in both Branch 4 and Branch 7")
           spark.sql("SELECT bev FROM all_branch WHERE branch = 'Branch4' INTERSECT SELECT bev FROM all_branch WHERE branch = 'Branch7'").show()
-          readLine("Press Enter to view menu")
         case "Scenario 4" => // Create a "partiion,View" for scenario 3
           println("Create a partition for Scenario 3")
           spark.sql("SELECT * FROM Partitioned_abc WHERE branches = 'Branch9'").show
           spark.sql("describe formatted Partitioned_abc").show()
-          readLine("Press Enter to view menu")
           /* //some alternate partition code testing
           val df = spark.sql("SELECT bev, branch FROM all_branch")
           df.repartition(9, col("branch")).where("branch == 'Branch5'").show()
@@ -88,7 +84,8 @@ object P1 {
           while (spark.sql(s"SELECT * FROM branch_a WHERE bev = '$t'").count() == 0) {
             t = readLine("Sorry, but that beverage isn't in the data, try again: ")
           }
-          spark.sql(s"CREATE TABLE row AS SELECT * FROM branch_a WHERE bev = '$t' LIMIT 1")
+          spark.sql("DROP TABLE IF EXISTS row")
+          spark.sql(s"CREATE TABLE row AS SELECT * FROM branch_a WHERE bev = '$t'")
           spark.sql("CREATE TABLE branch_a_del AS " +
             "SELECT branch_a.bev, branch_a.branch FROM branch_a " +
             "LEFT JOIN row " +
@@ -98,7 +95,6 @@ object P1 {
           spark.sql("DROP TABLE branch_a_del")
           spark.sql("DROP TABLE row")
           spark.sql("SELECT * FROM branch_a").show(999)
-          readLine("Press Enter to view menu")
         case "Scenario 6" =>
           println("My future query:\n")
           println("The Diversity Rank gives an indication of how diverse a branches orders are. For reverence, perfect\n" +
@@ -115,7 +111,6 @@ object P1 {
                                "INNER JOIN bevTotAll ON constotall.branch = bevTotAll.branch")
           df.show
           df.coalesce(1).write.format("csv").option("header",true).mode("overwrite").save("hdfs://localhost:9000/user/justis/future.csv")
-          readLine("Press Enter to view menu")
         case "End Program" => continue = false
       }
     }
